@@ -8,7 +8,9 @@ CREATE TABLE socio ( rut VARCHAR(10), nombre VARCHAR(20) NOT NULL, apellido VARC
 
 CREATE TABLE autor (id SERIAL, nombre VARCHAR(20) NOT NULL, apellido VARCHAR(20) NOT NULL, fecha_nacimiento VARCHAR(4), fecha_fallecimiento VARCHAR(4), PRIMARY KEY (id));
 
-CREATE TABLE libro (isbn VARCHAR(15), titulo VARCHAR NOT NULL, paginas SMALLINT NOT NULL, autor INT REFERENCES autor(id), coautor INT REFERENCES autor(id), PRIMARY KEY (isbn));
+CREATE TABLE libro (isbn VARCHAR(15), titulo VARCHAR NOT NULL, paginas SMALLINT NOT NULL, autores_id SERIAL, PRIMARY KEY (isbn));
+
+CREATE TABLE registro_libro_autores (autores_id INT, isbn VARCHAR(15) REFERENCES libro(isbn), autor INT NOT NULL REFERENCES autor(id), tipo_autor VARCHAR(7));
 
 CREATE TABLE prestamo (id SERIAL, socio VARCHAR(10) REFERENCES socio(rut), libro VARCHAR(15) REFERENCES libro(isbn),  fecha_inicio DATE NOT NULL, devolucion_teorica DATE NOT NULL, PRIMARY KEY (id));
 
@@ -39,13 +41,29 @@ INSERT INTO autor (id, nombre, apellido, fecha_nacimiento, fecha_fallecimiento) 
 
 ----INSERT LIBROS
 
-INSERT INTO libro (isbn, titulo, paginas, autor, coautor) VALUES ('111-1111111-111', 'Cuentos de Terror', 344, 3, 4);
+CREATE TABLE libro (isbn VARCHAR(15), titulo VARCHAR NOT NULL, paginas SMALLINT NOT NULL, autores_id SERIAL, PRIMARY KEY (isbn));
 
-INSERT INTO libro (isbn, titulo, paginas, autor, coautor) VALUES ('222-2222222-222', 'Poesias contemporaneas', 167, 1, NULL);
+INSERT INTO libro (isbn, titulo, paginas, autores_id) VALUES ('111-1111111-111', 'Cuentos de Terror', 344, DEFAULT);
 
-INSERT INTO libro (isbn, titulo, paginas, autor, coautor) VALUES ('333-3333333-333', 'Historia de Asia', 511, 2, NULL);
+INSERT INTO libro (isbn, titulo, paginas, autores_id) VALUES ('222-2222222-222', 'Poesias contemporaneas', 167, DEFAULT);
 
-INSERT INTO libro (isbn, titulo, paginas, autor, coautor) VALUES ('444-4444444-444', 'Manual de mecanica', 298, 5, NULL);
+INSERT INTO libro (isbn, titulo, paginas, autores_id) VALUES ('333-3333333-333', 'Historia de Asia', 511, DEFAULT);
+
+INSERT INTO libro (isbn, titulo, paginas, autores_id) VALUES ('444-4444444-444', 'Manual de mecanica', 298, DEFAULT);
+
+----INSERT REGISTRO_LIBRO_AUTORES
+
+CREATE TABLE registro_libro_autores (autores_id INT, isbn VARCHAR(15) REFERENCES libro(isbn), autor INT NOT NULL REFERENCES autor(id), tipo_autor VARCHAR(7));
+
+INSERT INTO registro_libro_autores (autores_id, isbn, autor, tipo_autor) VALUES (1, '111-1111111-111', 3, 'Autor');
+
+INSERT INTO registro_libro_autores (autores_id, isbn, autor, tipo_autor) VALUES (1, '111-1111111-111', 4, 'Coautor');
+
+INSERT INTO registro_libro_autores (autores_id, isbn, autor, tipo_autor) VALUES (2, '222-2222222-222', 1, 'Autor');
+
+INSERT INTO registro_libro_autores (autores_id, isbn, autor, tipo_autor) VALUES (3, '333-3333333-333', 2, 'Autor');
+
+INSERT INTO registro_libro_autores (autores_id, isbn, autor, tipo_autor) VALUES (4, '444-4444444-444', 5, 'Autor');
 
 ----INSERT PRESTAMOS
 INSERT INTO prestamo (id, socio, libro, fecha_inicio, devolucion_teorica) VALUES (DEFAULT, '1111111-1', '111-1111111-111', '2020-01-20', '2020-01-27');
@@ -86,7 +104,7 @@ SELECT * FROM libro WHERE paginas < 300;
 SELECT * FROM autor WHERE fecha_nacimiento > '1970-01-01';
 
 ---- c. ¿Cuál es el libro más solicitado?
- SELECT libro, count(*) FROM prestamo GROUP BY libro;
+SELECT libro, count(*) FROM prestamo GROUP BY libro;
 
 ---- d. Si se cobrara una multa de $100 por cada día de atraso, mostrar cuánto debería pagar cada usuario que entregue el préstamo después de 7 días.
 SELECT * FROM devolucion WHERE multa > 0;
